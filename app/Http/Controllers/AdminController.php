@@ -131,10 +131,11 @@ class AdminController extends Controller
     public function jobs()
     {
         $jobs = DB::table('jobs as j')
-    ->join('perusahaans as p', 'j.perusahaan_id', '=', 'p.id')
-    ->join('users as u', 'p.user_id', '=', 'u.id')
-    ->select('j.*', 'p.nama_perusahaan', 'u.nama_lengkap as nama_hr')
-    ->get();
+        ->join('perusahaans as p', 'j.perusahaan_id', '=', 'p.id')
+        ->join('users as u', 'p.user_id', '=', 'u.id')
+        ->select('j.*', 'p.nama_perusahaan', 'u.nama_lengkap as nama_hr')
+         ->whereNull('j.deleted_at')
+        ->get();
     
         $user_id = auth()->id();
         $unread_count = DB::table('notifications')->where('user_id', $user_id)->where('is_read', 0)->count();
@@ -153,7 +154,16 @@ class AdminController extends Controller
     */
     public function perusahaan()
     {
-        $perusahaan = Perusahaan::latest()->get();
+        $perusahaan = DB::table('perusahaans as p')
+        ->join('users as u', 'p.user_id', '=', 'u.id')
+        ->select(
+            'p.*',
+            'u.nama_lengkap as nama_hr',
+            'u.email as email_hr'
+        )
+        ->whereNull('p.deleted_at')
+        ->latest('p.created_at')
+        ->get();
 
         $user_id = auth()->id();
         $unread_count = DB::table('notifications')->where('user_id', $user_id)->where('is_read', 0)->count();
@@ -203,7 +213,138 @@ class AdminController extends Controller
         return back();
     }
 
-    
+    /*
+    |----------------------------------------------------------------------
+    | DELETE USER (Soft Delete)
+    |----------------------------------------------------------------------
+    */
+    public function deleteUser($id)
+    {
+        User::where('id', $id)->delete();
+        return back()->with('success', 'User berhasil dihapus.');
+    }
+
+    /*
+    |----------------------------------------------------------------------
+    | TRASH USERS
+    |----------------------------------------------------------------------
+    */
+    public function trashUsers()
+    {
+        $users = User::onlyTrashed()->where('role', 'user')->latest()->paginate(10);
+
+        $user_id = auth()->id();
+        $unread_count = DB::table('notifications')->where('user_id', $user_id)->where('is_read', 0)->count();
+        $notif_result = DB::table('notifications')->where('user_id', $user_id)->orderBy('created_at', 'desc')->limit(10)->get();
+
+        return view('admin.trash_users', compact('users', 'unread_count', 'notif_result'));
+    }
+
+    /*
+    |----------------------------------------------------------------------
+    | RESTORE USER
+    |----------------------------------------------------------------------
+    */
+    public function restoreUser($id)
+    {
+        User::onlyTrashed()->where('id', $id)->restore();
+        return back()->with('success', 'User berhasil dipulihkan.');
+    }
+
+    /*
+    |----------------------------------------------------------------------
+    | TOGGLE JOB STATUS
+    |----------------------------------------------------------------------
+    */
+    public function toggleJobStatus($id)
+    {
+        $job = Job::find($id);
+
+        if (!$job) {
+            return back()->with('error', 'Lowongan tidak ditemukan.');
+        }
+
+        $job->status_loker = $job->status_loker === 'Aktif' ? 'Tutup' : 'Aktif';
+        $job->save();
+
+        return back()->with('success', 'Status lowongan berhasil diperbarui.');
+    }
+
+    /*
+    |----------------------------------------------------------------------
+    | DELETE JOB (Soft Delete)
+    |----------------------------------------------------------------------
+    */
+    public function deleteJob($id)
+    {
+        Job::where('id', $id)->delete();
+        return back()->with('success', 'Lowongan berhasil dihapus.');
+    }
+
+    /*
+    |----------------------------------------------------------------------
+    | TRASH JOBS
+    |----------------------------------------------------------------------
+    */
+    public function trashJobs()
+    {
+        $jobs = Job::onlyTrashed()->latest()->paginate(10);
+
+        $user_id = auth()->id();
+        $unread_count = DB::table('notifications')->where('user_id', $user_id)->where('is_read', 0)->count();
+        $notif_result = DB::table('notifications')->where('user_id', $user_id)->orderBy('created_at', 'desc')->limit(10)->get();
+
+        return view('admin.trash_jobs', compact('jobs', 'unread_count', 'notif_result'));
+    }
+
+    /*
+    |----------------------------------------------------------------------
+    | RESTORE JOB
+    |----------------------------------------------------------------------
+    */
+    public function restoreJob($id)
+    {
+        Job::onlyTrashed()->where('id', $id)->restore();
+        return back()->with('success', 'Lowongan berhasil dipulihkan.');
+    }
+
+    /*
+    |----------------------------------------------------------------------
+    | DELETE APPLICATION (Soft Delete)
+    |----------------------------------------------------------------------
+    */
+    public function deleteApplication($id)
+    {
+        Application::where('id', $id)->delete();
+        return back()->with('success', 'Lamaran berhasil dihapus.');
+    }
+
+    /*
+    |----------------------------------------------------------------------
+    | TRASH APPLICATIONS
+    |----------------------------------------------------------------------
+    */
+    public function trashApplications()
+    {
+        $applications = Application::onlyTrashed()->latest()->paginate(10);
+
+        $user_id = auth()->id();
+        $unread_count = DB::table('notifications')->where('user_id', $user_id)->where('is_read', 0)->count();
+        $notif_result = DB::table('notifications')->where('user_id', $user_id)->orderBy('created_at', 'desc')->limit(10)->get();
+
+        return view('admin.trash_applications', compact('applications', 'unread_count', 'notif_result'));
+    }
+
+    /*
+    |----------------------------------------------------------------------
+    | RESTORE APPLICATION
+    |----------------------------------------------------------------------
+    */
+    public function restoreApplication($id)
+    {
+        Application::onlyTrashed()->where('id', $id)->restore();
+        return back()->with('success', 'Lamaran berhasil dipulihkan.');
+    }
 
     /*
     |----------------------------------------------------------------------
@@ -222,13 +363,17 @@ class AdminController extends Controller
                 'u.email',
                 DB::raw("COALESCE(j.posisi, 'Posisi Dihapus') as posisi")
             )
+            ->whereNull('a.deleted_at')  // ← lamaran yang dihapus
+            ->whereNull('u.deleted_at')  // ← user yang dihapus
             ->orderBy('a.tanggal_lamar', 'desc')
             ->paginate(10);
 
-            $user_id = auth()->id();
-            $unread_count = DB::table('notifications')->where('user_id', $user_id)->where('is_read', 0)->count();
-            $notif_result = DB::table('notifications')->where('user_id', $user_id)->orderBy('created_at', 'desc')->limit(10)->get();
-            return view('admin.applications', compact('applications', 'unread_count', 'notif_result'));    }
+        $user_id = auth()->id();
+        $unread_count = DB::table('notifications')->where('user_id', $user_id)->where('is_read', 0)->count();
+        $notif_result = DB::table('notifications')->where('user_id', $user_id)->orderBy('created_at', 'desc')->limit(10)->get();
+
+        return view('admin.applications', compact('applications', 'unread_count', 'notif_result'));
+    }
 
     /*
     |----------------------------------------------------------------------

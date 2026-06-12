@@ -4,15 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Jobs - JOBLYNX</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
-        rel="stylesheet">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
@@ -25,9 +19,10 @@
      class="fixed inset-0 bg-black/40 z-40 hidden lg:hidden"></div>
 
 <!-- SIDEBAR -->
+<!-- FIX #1: Tambah "lg:translate-x-0" agar sidebar selalu tampil di desktop -->
 <aside id="sidebar"
        class="fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-100 shadow-lg z-50
-              transform -translate-x-full transition-transform duration-300 flex flex-col">
+       transform -translate-x-full transition-transform duration-300 flex flex-col">
 
     <div class="px-6 py-5 border-b border-gray-100">
         <h1 class="text-xl font-extrabold text-[#1f4e5a] tracking-tight">
@@ -47,11 +42,11 @@
             <i class="fa-solid fa-users w-4"></i> Users
         </a>
         <a href="{{ route('admin.jobs') }}"
-   class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition relative overflow-hidden
-          {{ request()->is('admin/jobs')
-             ? 'bg-[#dcfce7] text-[#2d7f6a] border-l-4 border-[#2d7f6a] pl-3 shadow-sm'
-             : 'text-gray-600 hover:bg-gray-50 hover:text-[#2d7f6a] border-l-4 border-transparent pl-3' }}">
-    <i class="fa-solid fa-briefcase w-4"></i> Job Postings
+           class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition relative overflow-hidden
+                  {{ request()->is('admin/jobs')
+                     ? 'bg-[#dcfce7] text-[#2d7f6a] border-l-4 border-[#2d7f6a] pl-3 shadow-sm'
+                     : 'text-gray-600 hover:bg-gray-50 hover:text-[#2d7f6a] border-l-4 border-transparent pl-3' }}">
+            <i class="fa-solid fa-briefcase w-4"></i> Job Postings
         </a>
         <a href="{{ url('admin/perusahaan') }}"
            class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition
@@ -74,11 +69,13 @@
 </aside>
 
 <!-- MAIN WRAPPER -->
+<!-- FIX #2: Tambah "lg:ml-64" agar konten utama tidak tertutup sidebar -->
 <div class="flex-1 flex flex-col min-h-screen">
 
     <!-- TOPBAR -->
     <header class="bg-white/95 backdrop-blur-md border-b border-gray-100 sticky top-0 z-30 px-6 py-4 flex items-center justify-between shadow-sm">
         <div class="flex items-center gap-4">
+            <!-- Tombol burger hanya tampil di mobile -->
             <button onclick="toggleSidebar()" class="text-[#1f4e5a] hover:text-[#2d7f6a] transition text-xl">
                 <i class="fa-solid fa-bars"></i>
             </button>
@@ -89,41 +86,38 @@
         </div>
         <div class="flex items-center gap-3 relative">
             <div class="relative">
-                <div class="relative">
-    <button onclick="toggleNotif()" class="w-9 h-9 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-400 hover:text-[#2d7f6a] hover:bg-[#dcfce7] transition">
-        <i class="fa-solid fa-bell text-sm"></i>
-    </button>
-    @if(isset($unread_count) && $unread_count > 0)
-        <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-white rounded-full flex items-center justify-center text-white text-[8px] font-black">
-            {{ $unread_count > 9 ? '9+' : $unread_count }}
-        </span>
-    @endif
-</div>
+                <button onclick="toggleNotif()" class="w-9 h-9 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-400 hover:text-[#2d7f6a] hover:bg-[#dcfce7] transition">
+                    <i class="fa-solid fa-bell text-sm"></i>
+                </button>
+                @if(isset($unread_count) && $unread_count > 0)
+                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-white rounded-full flex items-center justify-center text-white text-[8px] font-black">
+                        {{ $unread_count > 9 ? '9+' : $unread_count }}
+                    </span>
+                @endif
                 <div id="notifDropdown" class="hidden absolute right-0 top-11 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[999]">
-    <div class="px-4 py-3 border-b border-gray-50 flex justify-between items-center">
-    <span class="text-[13px] font-bold text-[#1a2e38]">Notifikasi</span>
-    @if(isset($unread_count) && $unread_count > 0)
-        <div class="flex flex-col items-end gap-1">
-            <span class="text-[11px] bg-red-500 text-white px-2 py-0.5 rounded-full font-bold">{{ $unread_count }}</span>
-            <a href="{{ route('notifications.readAll') }}"
-                class="text-[9px] text-blue-600 hover:underline font-bold italic">Tandai semua dibaca</a>
-        </div>
-    @endif
-</div>
-    @forelse($notif_result ?? [] as $notif)
-        <div class="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 text-sm text-gray-700">
-            {{ $notif->message ?? $notif->pesan ?? '-' }}
-            <div class="text-[10px] text-gray-400 mt-1">
-                {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
-            </div>
-        </div>
-    @empty
-        <div class="px-4 py-6 text-center text-gray-400 text-sm">
-            <i class="fa-solid fa-bell-slash text-2xl mb-2 block opacity-30"></i>
-            Belum ada notifikasi.
-        </div>
-    @endforelse
-</div>
+                    <div class="px-4 py-3 border-b border-gray-50 flex justify-between items-center">
+                        <span class="text-[13px] font-bold text-[#1a2e38]">Notifikasi</span>
+                        @if(isset($unread_count) && $unread_count > 0)
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="text-[11px] bg-red-500 text-white px-2 py-0.5 rounded-full font-bold">{{ $unread_count }}</span>
+                                <a href="{{ route('notifications.readAll') }}" class="text-[9px] text-blue-600 hover:underline font-bold italic">Tandai semua dibaca</a>
+                            </div>
+                        @endif
+                    </div>
+                    @forelse($notif_result ?? [] as $notif)
+                        <div class="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 text-sm text-gray-700">
+                            {{ $notif->message ?? $notif->pesan ?? '-' }}
+                            <div class="text-[10px] text-gray-400 mt-1">
+                                {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
+                            </div>
+                        </div>
+                    @empty
+                        <div class="px-4 py-6 text-center text-gray-400 text-sm">
+                            <i class="fa-solid fa-bell-slash text-2xl mb-2 block opacity-30"></i>
+                            Belum ada notifikasi.
+                        </div>
+                    @endforelse
+                </div>
             </div>
             <button id="pbtn" onclick="togglePD()" class="flex items-center gap-2.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl px-3 py-2 transition-all">
                 <div class="w-7 h-7 rounded-lg bg-[#2d7f6a] flex items-center justify-center text-white text-xs font-bold">
@@ -152,7 +146,6 @@
     <!-- KONTEN -->
     <main class="flex-1 px-6 py-5">
 
-        <!-- HEADER: konsisten sama halaman lain -->
         <div class="max-w-6xl mx-auto px-6 pt-2">
             <div class="flex items-center gap-3 mb-1">
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
@@ -174,7 +167,6 @@
         <div class="max-w-6xl mx-auto px-6 mt-6">
             <div class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
 
-                <!-- HEADER CARD -->
                 <div class="px-6 py-4 flex justify-between items-center"
                      style="background: linear-gradient(135deg, #1a4450 0%, #2d7f6a 100%);">
                     <div class="flex items-center gap-3">
@@ -191,11 +183,8 @@
                     </div>
                 </div>
 
-                <!-- TABLE -->
                 <div class="overflow-x-auto">
                     <table class="w-full text-[13px]">
-
-                        <!-- THEAD: hijau muda konsisten -->
                         <thead>
                             <tr style="background-color: #f0faf7; border-bottom: 2px solid #c6ead9;">
                                 <th class="px-5 py-3.5 text-left text-[11px] font-extrabold uppercase tracking-wider text-[#2d7f6a]">Posisi</th>
@@ -204,12 +193,9 @@
                                 <th class="px-4 py-3.5 text-left text-[11px] font-extrabold uppercase tracking-wider text-[#2d7f6a]">Aksi</th>
                             </tr>
                         </thead>
-
                         <tbody class="divide-y divide-gray-100">
                             @forelse($jobs as $job)
                             <tr class="hover:bg-[#f0faf7] transition-colors duration-150 group">
-
-                                <!-- POSISI -->
                                 <td class="px-5 py-4">
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm shrink-0"
@@ -224,16 +210,12 @@
                                         </div>
                                     </div>
                                 </td>
-
-                                <!-- PERUSAHAAN -->
                                 <td class="px-4 py-4">
                                     <div class="flex items-center gap-2 text-gray-600 text-sm">
                                         <i class="fa-regular fa-building text-gray-300 text-xs"></i>
                                         {{ $job->nama_perusahaan ?? '-' }}
                                     </div>
                                 </td>
-
-                                <!-- STATUS -->
                                 <td class="px-4 py-4">
                                     @if($job->status_loker == 'Aktif')
                                         <span class="inline-flex items-center gap-1.5 bg-[#dcfce7] text-[#2d7f6a] px-3 py-1.5 rounded-full text-[10px] font-extrabold border border-[#a7f3d0]">
@@ -245,8 +227,6 @@
                                         </span>
                                     @endif
                                 </td>
-
-                                <!-- AKSI -->
                                 <td class="px-4 py-4">
                                     <div class="flex items-center gap-2">
                                         <button
@@ -261,7 +241,6 @@
                                         </button>
                                     </div>
                                 </td>
-
                             </tr>
                             @empty
                             <tr>
@@ -279,11 +258,9 @@
                     </table>
                 </div>
 
-                <!-- FOOTER INFO -->
                 <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/80">
                     <span class="text-xs text-gray-400">Total {{ count($jobs) }} lowongan terdaftar</span>
                 </div>
-
             </div>
         </div>
 
@@ -309,8 +286,34 @@
             </div>
         </div>
 
+        <!-- FIX #3: Modal Delete dipindah ke sini (LUAR script tag, di dalam body HTML) -->
+        <div id="deleteModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-[999]">
+            <div class="bg-white w-[360px] rounded-2xl shadow-xl p-6">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-red-500">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-[#1a4450]">Konfirmasi Hapus</h3>
+                </div>
+                <p class="text-sm text-gray-500 mb-5">
+                    Yakin ingin menghapus lowongan ini? Data yang sudah dihapus tidak dapat dikembalikan.
+                </p>
+                <div class="flex justify-end gap-3">
+                    <button onclick="closeDelete()"
+                        class="px-4 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-bold hover:bg-gray-200 transition">
+                        Batal
+                    </button>
+                    <a href="" id="deleteLink"
+                        class="px-4 py-2 rounded-xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition">
+                        Ya, Hapus
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <!-- MODAL UBAH PASSWORD -->
-        <div id="changePasswordModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-[999]">            <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 relative">
+        <div id="changePasswordModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-[999]">
+            <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 relative">
                 <button type="button" onclick="closeChangePasswordModal()" class="absolute top-4 right-4 text-gray-500 hover:text-[#1a4450]">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -342,7 +345,7 @@
 </div>
 
 <script>
-    // SIDEBAR
+    // SIDEBAR — toggle untuk mobile
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
@@ -365,11 +368,13 @@
 
     // PROFILE DROPDOWN
     function togglePD() { document.getElementById('pdd').classList.toggle('hidden'); }
-    function closePD() { document.getElementById('pdd').classList.add('hidden'); }
+    function closePD()   { document.getElementById('pdd').classList.add('hidden'); }
+
     document.addEventListener('click', function(e) {
         const pbtn = document.getElementById('pbtn');
-        const pdd = document.getElementById('pdd');
+        const pdd  = document.getElementById('pdd');
         if (pbtn && pdd && !pbtn.contains(e.target) && !pdd.contains(e.target)) closePD();
+
         const notifDD = document.getElementById('notifDropdown');
         if (notifDD && !e.target.closest('[onclick="toggleNotif()"]') && !notifDD.contains(e.target)) {
             notifDD.classList.add('hidden');
@@ -379,27 +384,40 @@
     // NOTIF
     function toggleNotif() { document.getElementById('notifDropdown').classList.toggle('hidden'); }
 
-    // MODAL DETAIL
+    // MODAL DETAIL — FIX: gunakan classList.replace untuk toggle display
     function openDetail(posisi, perusahaan, status, tipe, min, max) {
-        document.getElementById('detailPosisi').innerText = posisi;
+        document.getElementById('detailPosisi').innerText    = posisi;
         document.getElementById('detailPerusahaan').innerText = perusahaan;
-        document.getElementById('detailStatus').innerText = status;
-        document.getElementById('detailTipe').innerText = tipe;
+        document.getElementById('detailStatus').innerText    = status;
+        document.getElementById('detailTipe').innerText      = tipe;
         min = min || 0; max = max || 0;
         document.getElementById('detailGaji').innerText =
             'Rp ' + Number(min).toLocaleString('id-ID') + ' - Rp ' + Number(max).toLocaleString('id-ID');
         document.getElementById('detailModal').classList.replace('hidden', 'flex');
     }
-    function closeDetail() { document.getElementById('detailModal').classList.replace('flex', 'hidden'); }
+    function closeDetail() {
+        document.getElementById('detailModal').classList.replace('flex', 'hidden');
+    }
+
+    // FIX #3: Modal Delete — fungsi pindah ke sini (di dalam script), HTML-nya sudah di atas
+    function openDelete(url) {
+        document.getElementById('deleteLink').href = url;
+        document.getElementById('deleteModal').classList.remove('hidden');
+        document.getElementById('deleteModal').classList.add('flex');
+    }
+    function closeDelete() {
+        document.getElementById('deleteModal').classList.remove('flex');
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
 
     // MODAL PASSWORD
     function openChangePasswordModal() {
-    closePD();
-    document.getElementById('changePasswordModal').style.display = 'flex';
-}
-function closeChangePasswordModal() {
-    document.getElementById('changePasswordModal').style.display = 'none';
-}
+        closePD();
+        document.getElementById('changePasswordModal').classList.replace('hidden', 'flex');
+    }
+    function closeChangePasswordModal() {
+        document.getElementById('changePasswordModal').classList.replace('flex', 'hidden');
+    }
 </script>
 
 </body>

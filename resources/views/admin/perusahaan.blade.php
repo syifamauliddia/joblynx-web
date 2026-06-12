@@ -296,7 +296,7 @@
 
                                 <div class="flex items-center gap-2 text-gray-600 text-sm">
                                     <i class="fa-regular fa-envelope text-gray-300 text-xs"></i>
-                                    {{ $item->email }}
+                                   {{ $item->email_hr ?? '-' }}
                                 </div>
 
                             </td>
@@ -330,10 +330,11 @@
                                     <!-- DETAIL -->
                                     <button
                                         onclick="openDetail(
-                                            '{{ $item->nama_perusahaan }}',
-                                            '{{ $item->email }}',
-                                            '{{ $item->telepon }}',
-                                            '{{ $item->alamat }}',
+                                            '{{ addslashes($item->nama_perusahaan) }}',
+                                            '{{ addslashes($item->nama_hr ?? "") }}',
+                                            '{{ addslashes($item->email_hr ?? "") }}',
+                                            '{{ addslashes($item->bio_perusahaan ?? "") }}',
+                                            '{{ addslashes($item->website_perusahaan ?? "") }}',
                                             '{{ $item->status }}'
                                         )"
 
@@ -415,23 +416,22 @@
 
     <!-- MODAL DETAIL -->
     <div id="detailModal"
-        class="fixed inset-0 bg-black/40 hidden items-center justify-center z-[999]">
+        class="fixed inset-0 bg-black/40 hidden items-center justify-center z-[999] p-4">
 
-        <div class="bg-white w-[430px] rounded-2xl shadow-xl p-6 relative">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl p-6 relative max-h-[90vh] flex flex-col">
 
             <!-- CLOSE -->
             <button onclick="closeDetail()"
                 class="absolute top-3 right-4 text-gray-400 hover:text-red-500">
-
                 <i class="fa-solid fa-xmark text-lg"></i>
-
             </button>
 
-            <h3 class="text-xl font-bold text-[#1a4450] mb-5">
+            <h3 class="text-xl font-bold text-[#1a4450] mb-5 shrink-0">
                 Detail Perusahaan
             </h3>
 
-            <div class="space-y-4 text-sm">
+            <!-- SCROLLABLE CONTENT -->
+            <div class="space-y-4 text-sm overflow-y-auto pr-1">
 
                 <div>
                     <div class="text-gray-400 text-xs mb-1">Nama Perusahaan</div>
@@ -439,18 +439,23 @@
                 </div>
 
                 <div>
-                    <div class="text-gray-400 text-xs mb-1">Email</div>
+                    <div class="text-gray-400 text-xs mb-1">Nama HR</div>
+                    <div class="font-semibold text-[#1a4450]" id="detailNamaHR"></div>
+                </div>
+
+                <div>
+                    <div class="text-gray-400 text-xs mb-1">Email HR</div>
                     <div class="font-semibold text-[#1a4450]" id="detailEmail"></div>
                 </div>
 
                 <div>
-                    <div class="text-gray-400 text-xs mb-1">Telepon</div>
-                    <div class="font-semibold text-[#1a4450]" id="detailTelepon"></div>
+                    <div class="text-gray-400 text-xs mb-1">Bio Perusahaan</div>
+                    <div class="font-semibold text-[#1a4450] leading-relaxed" id="detailBio"></div>
                 </div>
 
                 <div>
-                    <div class="text-gray-400 text-xs mb-1">Alamat</div>
-                    <div class="font-semibold text-[#1a4450]" id="detailAlamat"></div>
+                    <div class="text-gray-400 text-xs mb-1">Website</div>
+                    <div class="font-semibold text-[#1a4450]" id="detailWebsite"></div>
                 </div>
 
                 <div>
@@ -542,12 +547,13 @@
     <script>
 
         // DETAIL
-        function openDetail(nama, email, telepon, alamat, status)
+        function openDetail(nama, namaHR, email, bio, website, status)
         {
             document.getElementById('detailNama').innerText = nama;
+            document.getElementById('detailNamaHR').innerText = namaHR;
             document.getElementById('detailEmail').innerText = email;
-            document.getElementById('detailTelepon').innerText = telepon;
-            document.getElementById('detailAlamat').innerText = alamat;
+            document.getElementById('detailBio').innerText = bio;
+            document.getElementById('detailWebsite').innerText = website;
             document.getElementById('detailStatus').innerText = status;
 
             document.getElementById('detailModal')
