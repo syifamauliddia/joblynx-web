@@ -209,6 +209,10 @@ class AdminController extends Controller
     */
     public function deletePerusahaan($id)
     {
+        DB::table('jobs')
+        ->where('perusahaan_id', $id)
+        ->update(['status_loker' => 'Tutup']);
+        
         Perusahaan::where('id', $id)->delete();
         return back();
     }
