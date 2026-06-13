@@ -4,30 +4,24 @@ namespace App\Exports;
 
 use App\Models\Perusahaan;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class PerusahaanExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
+class PerusahaanExport implements FromQuery, WithHeadings, WithMapping, WithStyles, ShouldAutoSize, WithTitle
 {
-    protected $request;
-    protected $no = 1;
+    protected Request $request;
 
     public function __construct(Request $request)
     {
         $this->request = $request;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | COLLECTION: Query data sesuai filter aktif
-    |--------------------------------------------------------------------------
-    */
-    public function collection()
+    public function query()
     {
         $search = $this->request->search;
         $status = $this->request->status;
@@ -39,60 +33,42 @@ class PerusahaanExport implements FromCollection, WithHeadings, WithMapping, Wit
             ->when($status, function ($q) use ($status) {
                 $q->where('status', $status);
             })
-            ->latest()
-            ->get();
+            ->latest();
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | HEADER KOLOM
-    |--------------------------------------------------------------------------
-    */
+    public function title(): string
+    {
+        $status = $this->request->status;
+        return $status ? 'Perusahaan - ' . $status : 'Perusahaan - Semua';
+    }
+
     public function headings(): array
     {
-        return [
-            'No',
-            'ID',
-            'Nama Perusahaan',
-            'Email Akun',
-            'Website',
-            'Status',
-            'Tanggal Registrasi',
-        ];
+        return ['No', 'ID', 'Nama Perusahaan', 'Email HR', 'Nama HR', 'Status', 'Terdaftar'];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | MAPPING DATA PER BARIS
-    |--------------------------------------------------------------------------
-    */
     public function map($p): array
     {
+        static $no = 0;
+        $no++;
         return [
-            $this->no++,
+            $no,
             $p->id,
             $p->nama_perusahaan ?? '-',
             $p->user->email ?? '-',
-            $p->website ?? '-',
+            $p->user->nama_lengkap ?? '-',
             $p->status ?? '-',
             $p->created_at ? $p->created_at->format('d/m/Y H:i') : '-',
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | STYLING: Header hijau sesuai tema JobLynx
-    |--------------------------------------------------------------------------
-    */
-    public function styles(Worksheet $sheet)
+    public function styles(Worksheet $sheet): array
     {
         return [
             1 => [
-                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-                'fill' => [
-                    'fillType'   => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '2d7f6a'],
-                ],
+                'font'      => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
+                'fill'      => ['fillType' => 'solid', 'startColor' => ['argb' => 'FF2d7f6a']],
+                'alignment' => ['horizontal' => 'center'],
             ],
         ];
     }

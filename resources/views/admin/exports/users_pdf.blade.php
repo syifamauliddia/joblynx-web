@@ -188,13 +188,18 @@
 
         &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
 
-        <strong>Sumber Data :</strong>
-        Database JOBLYNX
+        <strong>Filter Role :</strong>
+        {{ $exportMeta['filter_role'] ?? 'Semua Role' }}
+
+        &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+
+        <strong>Kata Kunci :</strong>
+        {{ $exportMeta['filter_search'] ?? '-' }}
 
         &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
 
         <strong>Tanggal Export :</strong>
-        {{ now()->translatedFormat('d F Y H:i:s') }} WIB
+        {{ $exportMeta['tanggal'] ?? now()->translatedFormat('d F Y') }}
     </div>
 
     <!-- TABEL -->

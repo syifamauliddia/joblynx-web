@@ -235,14 +235,14 @@
                     <div class="bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-full">
                         Total: {{ method_exists($perusahaan, 'total') ? $perusahaan->total() : count($perusahaan) }} Perusahaan
                     </div>
-                    <a href="{{ route('admin.perusahaan.export.excel', request()->query()) }}"
+                    <button onclick="openExportModal('excel')"
                         class="flex items-center gap-1.5 bg-green-500 text-white font-bold text-sm px-4 py-2 rounded-xl hover:bg-green-600 transition shadow-sm">
                         <i class="fa-solid fa-file-excel text-xs"></i> Export Excel
-                    </a>
-                    <a href="{{ route('admin.perusahaan.export.pdf', request()->query()) }}"
+                    </button>
+                    <button onclick="openExportModal('pdf')"
                         class="flex items-center gap-1.5 bg-red-500 text-white font-bold text-sm px-4 py-2 rounded-xl hover:bg-red-600 transition shadow-sm">
                         <i class="fa-solid fa-file-pdf text-xs"></i> Export PDF
-                    </a>
+                    </button>
                 </div>
             </div>
 
@@ -775,7 +775,111 @@ document.addEventListener('click', function(e) {
         notifDD.classList.add('hidden');
     }
 });
+
+// ─── EXPORT MODAL ────────────────────────────────────────────────────────────
+let exportFormat = 'excel';
+
+function openExportModal(format) {
+    exportFormat = format;
+    const isExcel = format === 'excel';
+    document.getElementById('exportModalTitle').textContent = isExcel ? 'Export Excel – Data Perusahaan' : 'Export PDF – Data Perusahaan';
+    document.getElementById('exportModalIcon').className = isExcel
+        ? 'fa-solid fa-file-excel text-2xl text-green-600'
+        : 'fa-solid fa-file-pdf text-2xl text-red-500';
+    document.getElementById('exportModalIconBg').className = isExcel
+        ? 'w-12 h-12 rounded-2xl flex items-center justify-center bg-green-100'
+        : 'w-12 h-12 rounded-2xl flex items-center justify-center bg-red-100';
+    document.getElementById('exportModalBtn').className = isExcel
+        ? 'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-green-500 hover:bg-green-600 transition'
+        : 'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-red-500 hover:bg-red-600 transition';
+    document.getElementById('exportModal').classList.replace('hidden','flex');
+}
+
+function closeExportModal() {
+    document.getElementById('exportModal').classList.replace('flex','hidden');
+}
+
+function doExportPerusahaan() {
+    const status = document.getElementById('exportStatus').value;
+    const search = document.getElementById('exportSearch').value.trim();
+    const params = new URLSearchParams();
+    if (status) params.set('status', status);
+    if (search) params.set('search', search);
+    const route = exportFormat === 'excel'
+        ? '{{ route("admin.perusahaan.export.excel") }}'
+        : '{{ route("admin.perusahaan.export.pdf") }}';
+    window.location.href = route + (params.toString() ? '?' + params.toString() : '');
+    closeExportModal();
+}
 </script>
+
+{{-- ═══════════════════════════════════════════════════════
+     MODAL: CUSTOM EXPORT PERUSAHAAN
+══════════════════════════════════════════════════════════ --}}
+<div id="exportModal"
+     class="hidden fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm items-center justify-center px-4"
+     onclick="if(event.target===this) closeExportModal()">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden">
+
+        {{-- Header --}}
+        <div class="px-6 pt-6 pb-4 flex items-center gap-4 border-b border-gray-100">
+            <div id="exportModalIconBg" class="w-12 h-12 rounded-2xl flex items-center justify-center bg-green-100">
+                <i id="exportModalIcon" class="fa-solid fa-file-excel text-2xl text-green-600"></i>
+            </div>
+            <div class="flex-1">
+                <h3 id="exportModalTitle" class="font-bold text-gray-800 text-base">Export Excel – Data Perusahaan</h3>
+                <p class="text-gray-400 text-[11px] mt-0.5">Pilih filter yang ingin diekspor</p>
+            </div>
+            <button onclick="closeExportModal()" class="text-gray-300 hover:text-gray-500 transition">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        {{-- Body --}}
+        <div class="px-6 py-5 flex flex-col gap-4">
+
+            {{-- Filter Status --}}
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+                    <i class="fa-solid fa-circle-check mr-1 text-[#2d7f6a]"></i> Status Perusahaan
+                </label>
+                <select id="exportStatus"
+                        class="w-full border border-gray-200 rounded-xl text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#2d7f6a]/30 bg-white text-gray-700">
+                    <option value="">Semua Status (Aktif & Nonaktif)</option>
+                    <option value="Aktif">Aktif Saja</option>
+                    <option value="Nonaktif">Nonaktif Saja</option>
+                </select>
+            </div>
+
+            {{-- Pencarian --}}
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+                    <i class="fa-solid fa-magnifying-glass mr-1 text-[#2d7f6a]"></i> Kata Kunci (Opsional)
+                </label>
+                <input id="exportSearch" type="text" placeholder="Nama perusahaan..."
+                       class="w-full border border-gray-200 rounded-xl text-sm px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#2d7f6a]/30 bg-white text-gray-700">
+            </div>
+
+            {{-- Info box --}}
+            <div class="bg-[#f0faf7] border border-[#2d7f6a]/20 rounded-xl px-4 py-3 flex gap-3 items-start">
+                <i class="fa-solid fa-circle-info text-[#2d7f6a] mt-0.5 text-sm"></i>
+                <p class="text-xs text-[#2d7f6a]">Jika semua filter dikosongkan, seluruh data perusahaan akan diekspor.</p>
+            </div>
+        </div>
+
+        {{-- Footer --}}
+        <div class="px-6 pb-6 flex gap-3">
+            <button onclick="closeExportModal()"
+                    class="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 transition">
+                Batal
+            </button>
+            <button id="exportModalBtn" onclick="doExportPerusahaan()"
+                    class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-green-500 hover:bg-green-600 transition">
+                <i class="fa-solid fa-download"></i> Unduh Sekarang
+            </button>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

@@ -204,7 +204,7 @@
                                     : 'Selamat Malam'));
                     $greetIcon = $hour < 11 ? '🌤️' : ($hour < 15 ? '☀️' : ($hour < 18 ? '🌇' : '🌙'));
                     $firstName = explode(' ', Auth::user()->nama_lengkap)[0];
-                    $dateNow = now()->timezone('Asia/Jakarta')->translatedFormat('l, d F Y');
+                    $dateNow = now()->timezone('Asia/Jakarta')->locale('id')->translatedFormat('l, d F Y');
                 @endphp
                 <div
                     class="flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-5 py-4 shadow-sm">
@@ -237,7 +237,7 @@
                 $pctJobs = $total_jobs > 0 ? max(4, round(($total_jobs / $maxVal) * 100)) : 0;
                 $pctApps = $total_applications > 0 ? max(4, round(($total_applications / $maxVal) * 100)) : 0;
             @endphp
-            <div class="max-w-6xl mx-auto px-6 mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="max-w-6xl mx-auto px-6 mt-6 grid grid-cols-2 md:grid-cols-3 gap-4">
 
                 <!-- Total User -->
                 <div
@@ -341,7 +341,11 @@
                             <i class="fa-solid fa-bell text-[#2d7f6a] text-base"></i>
                         </div>
                     </div>
-                    <div class="mt-3 flex items-center gap-2">
+                    <div class="mt-4 h-1.5 rounded-full bg-[#dcfce7] overflow-hidden">
+                        @php $pctNotif = ($total_notifications ?? 0) > 0 ? max(4, min(100, round((($notif_published ?? 0) / max($total_notifications,1)) * 100))) : 0; @endphp
+                        <div class="h-1.5 rounded-full bg-[#2d7f6a] transition-all duration-700" style="width: {{ $pctNotif }}%"></div>
+                    </div>
+                    <div class="mt-2 flex items-center gap-2">
                         <span class="text-[10px] bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full font-bold">Draft: {{ $notif_draft ?? 0 }}</span>
                         <span class="text-[10px] bg-[#dcfce7] text-[#2d7f6a] px-2 py-0.5 rounded-full font-bold">Published: {{ $notif_published ?? 0 }}</span>
                     </div>

@@ -181,13 +181,18 @@
 
         &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
 
-        <strong>Sumber Data :</strong>
-        Database JOBLYNX
+        <strong>Filter Status :</strong>
+        {{ $exportMeta['filter_status'] ?? 'Semua Status' }}
+
+        &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+
+        <strong>Kata Kunci :</strong>
+        {{ $exportMeta['filter_search'] ?? '-' }}
 
         &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
 
         <strong>Tanggal Export :</strong>
-        {{ now()->translatedFormat('d F Y H:i:s') }} WIB
+        {{ $exportMeta['tanggal'] ?? now()->translatedFormat('d F Y') }}
     </div>
 
     <!-- TABEL -->

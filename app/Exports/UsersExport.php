@@ -4,67 +4,58 @@ namespace App\Exports;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class UsersExport implements FromCollection, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
+class UsersExport implements FromQuery, WithHeadings, WithMapping, WithStyles, ShouldAutoSize, WithTitle
 {
-    protected $request;
-    protected $no = 1;
+    protected Request $request;
 
     public function __construct(Request $request)
     {
         $this->request = $request;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | COLLECTION: Query data sesuai filter aktif
-    |--------------------------------------------------------------------------
-    */
-    public function collection()
+    public function query()
     {
         $search = $this->request->search;
+        $role   = $this->request->role;
 
-        return User::when($search, function ($q) use ($search) {
-                $q->where('email', 'like', "%$search%")
-                  ->orWhere('nama_lengkap', 'like', "%$search%");
+        return User::whereIn('role', ['user', 'hr'])
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('email', 'like', "%$search%")
+                        ->orWhere('nama_lengkap', 'like', "%$search%");
+                });
             })
-            ->latest()
-            ->get();
+            ->when($role, function ($q) use ($role) {
+                $q->where('role', $role);
+            })
+            ->latest();
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | HEADER KOLOM
-    |--------------------------------------------------------------------------
-    */
+    public function title(): string
+    {
+        $role = $this->request->role;
+        return $role ? 'Users - ' . strtoupper($role) : 'Users - Semua';
+    }
+
     public function headings(): array
     {
-        return [
-            'No',
-            'ID',
-            'Nama Lengkap',
-            'Email',
-            'Role',
-            'Tanggal Registrasi',
-        ];
+        return ['No', 'ID', 'Nama Lengkap', 'Email', 'Role', 'Tanggal Registrasi'];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | MAPPING DATA PER BARIS
-    |--------------------------------------------------------------------------
-    */
     public function map($user): array
     {
+        static $no = 0;
+        $no++;
         return [
-            $this->no++,
+            $no,
             $user->id,
             $user->nama_lengkap ?? '-',
             $user->email,
@@ -73,20 +64,13 @@ class UsersExport implements FromCollection, WithHeadings, WithMapping, WithStyl
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | STYLING: Header hijau sesuai tema JobLynx
-    |--------------------------------------------------------------------------
-    */
-    public function styles(Worksheet $sheet)
+    public function styles(Worksheet $sheet): array
     {
         return [
             1 => [
-                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-                'fill' => [
-                    'fillType'   => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '2d7f6a'],
-                ],
+                'font'      => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
+                'fill'      => ['fillType' => 'solid', 'startColor' => ['argb' => 'FF2d7f6a']],
+                'alignment' => ['horizontal' => 'center'],
             ],
         ];
     }
