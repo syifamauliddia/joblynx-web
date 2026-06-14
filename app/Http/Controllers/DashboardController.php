@@ -191,6 +191,12 @@ class DashboardController extends Controller
 
             $q_history = $query->orderBy('a.created_at', 'desc')->get();
 
+            $deleted_jobs = DB::table('jobs')
+                ->where('perusahaan_id', $perusahaan_id)
+                ->whereNotNull('deleted_at')
+                ->orderBy('deleted_at', 'desc')
+                ->get();
+
             return view('dashboard', compact(
                 'role',
                 'nama_user',
@@ -202,7 +208,8 @@ class DashboardController extends Controller
                 'filter_status',
                 'is_logged_in',
                 'unread_count',
-                'notif_result'
+                'notif_result',
+                'deleted_jobs' 
             ));
         }
 

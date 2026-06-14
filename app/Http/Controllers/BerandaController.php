@@ -149,6 +149,7 @@ class BerandaController extends Controller
         $keyword = trim($request->get('keyword', ''));
         $lokasi = trim($request->get('lokasi', ''));
         $tipe = trim($request->get('tipe', ''));
+        $gaji = trim($request->get('gaji', ''));
 
         $query = DB::table('jobs')
             ->leftJoin('perusahaans', 'jobs.perusahaan_id', '=', 'perusahaans.id') 
@@ -161,10 +162,7 @@ class BerandaController extends Controller
             ->whereNull('jobs.deleted_at');
 
         if ($role === 'hr') {
-            $query->where(function ($q) use ($perusahaan_hr_id) { 
-                $q->where('jobs.status_loker', 'Aktif')
-                  ->orWhere('jobs.perusahaan_id', $perusahaan_hr_id); 
-            });
+            $query->where('jobs.perusahaan_id', $perusahaan_hr_id);
         } else {
             $query->where('jobs.status_loker', 'Aktif');
         }
@@ -184,6 +182,10 @@ class BerandaController extends Controller
 
         if (!empty($tipe) && $tipe !== 'Semua') {
             $query->where('jobs.tipe_pekerjaan', $tipe);
+        }
+
+        if (!empty($gaji)) {
+            $query->where('jobs.gaji_max', '>=', (int)$gaji);
         }
 
         $result = $query->orderBy('jobs.created_at', 'desc')->get();
@@ -247,6 +249,7 @@ class BerandaController extends Controller
             'keyword',
             'lokasi',
             'tipe',
+            'gaji',
             'result',
             'total_loker',
             'total_pelamar',

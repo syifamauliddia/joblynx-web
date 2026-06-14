@@ -337,18 +337,18 @@
             </div>
         </div>
 
-        {{-- FITUR BARU: TONG SAMPAH LOWONGAN KHUSUS HR --}}
-        @if ($role == 'hr')
+        {{-- TONG SAMPAH LOWONGAN KHUSUS HR --}}
+       @if ($role == 'hr')
             <div class="mt-10 mb-10">
                 <h3 class="text-xl font-extrabold text-[#1a4450] mb-4">
                     <i class="fa-solid fa-trash-can-arrow-up text-red-500 mr-2"></i> Riwayat Lowongan Dihapus
                 </h3>
 
-                @if (isset($loker_dihapus) && $loker_dihapus->count() > 0)
+                @if (isset($deleted_jobs) && $deleted_jobs->count() > 0)
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach ($loker_dihapus as $hapus)
-                            <div
-                                class="bg-red-50/50 border border-red-100 p-5 rounded-2xl flex justify-between items-center shadow-sm">
+                        
+                        @foreach ($deleted_jobs as $hapus)
+                            <div class="bg-red-50/50 border border-red-100 p-5 rounded-2xl flex justify-between items-center shadow-sm">
                                 <div>
                                     <h4 class="font-bold text-gray-700">{{ $hapus->posisi }}</h4>
                                     <p class="text-xs text-gray-400 mt-1">Dihapus pada:

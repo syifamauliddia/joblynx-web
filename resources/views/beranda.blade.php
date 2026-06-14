@@ -175,6 +175,13 @@
                         class="bg-transparent w-full outline-none text-sm font-semibold text-gray-700 placeholder:text-gray-400">
                 </div>
 
+                <div class="flex-1 w-full flex items-center bg-gray-50 hover:bg-white rounded-xl px-4 py-3.5 border border-transparent hover:border-[#2d7f6a] focus-within:border-[#2d7f6a] focus-within:bg-white transition-all shadow-sm relative">
+                    <i class="fa-solid fa-money-bill-wave text-[#2d7f6a] mr-3"></i>
+                    <input type="number" name="gaji" value="{{ $gaji ?? '' }}"
+                        placeholder="Gaji Minimal (Angka)"
+                        class="bg-transparent w-full outline-none text-sm font-semibold text-gray-700 placeholder:text-gray-400">
+                </div>
+
                 <button type="submit"
                     class="w-full md:w-auto bg-[#1a4450] hover:bg-[#13323b] text-white font-extrabold py-3.5 px-10 rounded-xl transition-all shadow-lg hover:shadow-2xl active:scale-95">
                     Cari Loker
@@ -376,11 +383,14 @@
                         <div class="flex justify-between items-start mb-4">
                             <div
                                 class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center text-blue-500 text-xl font-bold shadow-sm">
-                                @if (!empty($row->logo_perusahaan))
+                                @if(!empty($row->logo_perusahaan) && file_exists(public_path('uploads/' . $row->logo_perusahaan)))
                                     <img src="{{ asset('uploads/' . $row->logo_perusahaan) }}"
+                                        alt="Logo {{ $row->nama_perusahaan }}" 
                                         class="w-full h-full object-cover rounded-lg">
                                 @else
-                                    {{ strtoupper(substr($row->nama_perusahaan, 0, 1)) }}
+                                    <div class="w-full h-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-2xl rounded-lg">
+                                        {{ strtoupper(substr($row->posisi, 0, 1)) }}
+                                    </div>
                                 @endif
                             </div>
                         </div>
