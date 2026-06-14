@@ -302,7 +302,7 @@ class AdminController extends Controller
         $jobStatus = $data->status === 'Aktif' ? 'Aktif' : 'Tutup';
 
         DB::table('jobs')
-            ->where('perusahaan_id', $id) // $id = perusahaans.id ✅
+            ->where('perusahaan_id', $id) 
             ->update(['status_loker' => $jobStatus]);
 
         return back()->with('success', 'Status perusahaan dan semua lowongannya berhasil diperbarui.');
