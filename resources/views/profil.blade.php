@@ -230,14 +230,6 @@ function previewCV(input){
 
                             <div class="mt-6">
                                 <label class="block text-xs font-medium text-gray-400 uppercase mb-2.5">
-                                    Skill (contoh: Laravel, Figma, PHP)
-                                </label>
-                                <input type="text" name="skills" value="{{ $profile->skills ?? '' }}"
-                                    class="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border">
-                            </div>
-
-                            <div class="mt-6">
-                                <label class="block text-xs font-medium text-gray-400 uppercase mb-2.5">
                                     Pengalaman
                                 </label>
                                 <textarea name="pengalaman" rows="4" class="w-full px-5 py-3.5 rounded-2xl bg-gray-50 border">{{ $profile->pengalaman ?? '' }}</textarea>
