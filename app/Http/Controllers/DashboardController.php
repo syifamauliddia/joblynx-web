@@ -19,14 +19,13 @@ class DashboardController extends Controller
         $role = $user->role;
 
         // =========================
-        // GLOBAL VARIABLES (FIX ERROR BLADE)
+        // GLOBAL VARIABLES
         // =========================
         $is_logged_in = true;
 
         $nama_user = $user->nama_lengkap ?? $user->email;
         $nav_foto = $user->foto_profil ?? '';
 
-        // FIX: default biar tidak error di blade
         $unread_count = DB::table('notifications')
             ->where('user_id', $user_id)
             ->where('is_read', 0)
@@ -59,7 +58,6 @@ class DashboardController extends Controller
             if ($perusahaan) {
                 $perusahaan_id = $perusahaan->id ?? null;
 
-                // FIX ERROR: pastikan kolom ada
                 $nama_perusahaan = $perusahaan->nama_perusahaan ?? 'Perusahaan';
                 $nav_foto = $perusahaan->logo_perusahaan ?? $nav_foto;
             }
@@ -98,20 +96,20 @@ class DashboardController extends Controller
             }
 
             $q_history = DB::table('applications as a')
-    ->join('jobs as j', 'a.job_id', '=', 'j.id')
-    ->leftJoin('perusahaans as p', 'j.perusahaan_id', '=', 'p.id')
-    ->leftJoin('users as u', 'p.user_id', '=', 'u.id') // <-- JOIN KE TABEL USERS
-    ->select(
-        'a.id as app_id',
-        'a.status',
-        'a.tanggal_lamar',
-        'j.posisi',
-        'p.nama_perusahaan as perusahaan',
-        'u.email as hr_email' // <-- PASTI ADA INI
-    )
-    ->where('a.pelamar_id', $pelamar_id)
-    ->orderBy('a.created_at', 'desc')
-    ->get();
+            ->join('jobs as j', 'a.job_id', '=', 'j.id')
+            ->leftJoin('perusahaans as p', 'j.perusahaan_id', '=', 'p.id')
+            ->leftJoin('users as u', 'p.user_id', '=', 'u.id') 
+            ->select(
+                'a.id as app_id',
+                'a.status',
+                'a.tanggal_lamar',
+                'j.posisi',
+                'p.nama_perusahaan as perusahaan',
+                'u.email as hr_email' 
+            )
+            ->where('a.pelamar_id', $pelamar_id)
+            ->orderBy('a.created_at', 'desc')
+            ->get();
 
             return view('dashboard', compact(
                 'role',
@@ -220,7 +218,6 @@ class DashboardController extends Controller
 {
     $user_id = Auth::id();
 
-    // Ubah semua notifikasi user ini menjadi sudah dibaca
     DB::table('notifications')
         ->where('user_id', $user_id)
         ->where('is_read', 0)

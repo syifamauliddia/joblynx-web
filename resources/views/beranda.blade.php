@@ -79,12 +79,24 @@
                             <div class="max-h-80 overflow-y-auto font-normal notif-scroll">
                                 @if ($notif_result->count() > 0)
                                     @foreach ($notif_result as $notif)
-                                        <div
-                                            class="p-4 border-b border-gray-50 hover:bg-gray-50 transition {{ $notif->is_read ? 'opacity-60' : 'bg-white' }}">
+                                        <div class="p-4 border-b border-gray-50 hover:bg-gray-50 transition {{ $notif->is_read ? 'opacity-60' : 'bg-white' }}">
                                             <p class="text-sm text-gray-700 mb-1">{{ $notif->pesan }}</p>
-                                            <span class="text-xs text-gray-400">
-    {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
-</span>
+
+                                            @if (!empty($notif->pesan_custom))
+                                                <button
+                                                    onclick="toggleDetailNotifBeranda('notifB{{ $notif->id }}')"
+                                                    class="mt-1 text-[10px] text-[#59a896] font-bold hover:underline flex items-center gap-1">
+                                                    <i class="fa-solid fa-circle-info"></i> Lihat Detail
+                                                </button>
+                                                <div id="notifB{{ $notif->id }}"
+                                                    class="hidden mt-2 bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-gray-600 leading-relaxed whitespace-pre-line">
+                                                    {{ $notif->pesan_custom }}
+                                                </div>
+                                            @endif
+
+                                            <span class="text-xs text-gray-400 block mt-1">
+                                                {{ \Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}
+                                            </span>
                                         </div>
                                     @endforeach
                                 @else
@@ -607,13 +619,14 @@
         function toggleNotif() {
             document.getElementById('dropdownNotif').classList.toggle('hidden');
         }
-        window.onclick = function(e) {
-            const btnNotif = document.getElementById('btnNotif');
-            if (btnNotif && !btnNotif.contains(e.target)) {
-                const dropdown = document.getElementById('dropdownNotif');
-                if (dropdown) dropdown.classList.add('hidden');
+            window.addEventListener('click', function(e) {
+            const btn = document.getElementById('btnNotif');
+            const dd = document.getElementById('dropdownNotif');
+
+            if (btn && dd && !btn.contains(e.target) && !dd.contains(e.target)) {
+                dd.classList.add('hidden');
             }
-        }
+        });
 
         function konfirmasiLogout() {
             if (confirm('Apakah Anda yakin ingin keluar dari JOBLYNX?')) {
@@ -703,6 +716,10 @@
         function tutupModalDetail() {
             document.getElementById('modalDetail').classList.add('hidden');
             document.getElementById('modalDetail').classList.remove('flex');
+        }
+
+        function toggleDetailNotifBeranda(id) {
+            document.getElementById(id).classList.toggle('hidden');
         }
     </script>
 </body>
